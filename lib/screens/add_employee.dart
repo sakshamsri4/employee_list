@@ -28,38 +28,11 @@ class _AddEmployeeState extends State<AddEmployee> {
       padding: const EdgeInsets.only(left: 20, right: 20, top: 20),
       child: Column(
         children: [
-          TextFormField(
-            controller: nameController,
-            style: getTextHeading(color: AppColors.colorBlack, fontSize: 12),
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.people, color: AppColors.colorBlue),
-              hintText: "Employee Name",
-              hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10.0),
-                borderSide: const BorderSide(width: 1.0, color: Colors.grey),
-              ),
-            ),
-          ),
+          buildEmployeeName(),
           const SizedBox(
             height: 20,
           ),
-          TextFormField(
-            controller: roleController,
-            style: getTextHeading(color: AppColors.colorBlack, fontSize: 12),
-            decoration: InputDecoration(
-              prefixIcon: const Icon(Icons.work_outline_outlined,
-                  color: AppColors.colorBlue),
-              hintText: "Select Role",
-              hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
-              suffixIcon:
-                  const Icon(Icons.arrow_drop_down, color: AppColors.colorBlue),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(6.0),
-                borderSide: const BorderSide(width: 1.0, color: Colors.grey),
-              ),
-            ),
-          ),
+          buildRole(),
           const SizedBox(
             height: 20,
           ),
@@ -75,8 +48,8 @@ class _AddEmployeeState extends State<AddEmployee> {
             ],
           ),
           const Spacer(),
-          Divider(),
-          SizedBox(
+          const Divider(),
+          const SizedBox(
             height: 10,
           ),
           Row(
@@ -93,6 +66,46 @@ class _AddEmployeeState extends State<AddEmployee> {
           ),
         ],
       ),
+    );
+  }
+
+  Future buildBottomSheet() {
+    return showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
+      builder: (BuildContext context) {
+        return Padding(
+          padding: MediaQuery.of(context).viewInsets,
+          child: Container(
+            height: MediaQuery.of(context).size.height * 0.5,
+            child: ListView.separated(
+              itemCount: 4,
+              separatorBuilder: (BuildContext context, int index) =>
+                  const Divider(),
+              itemBuilder: (BuildContext context, int index) {
+                List<String> roles = [
+                  "Product Designer",
+                  "Flutter Developer",
+                  "QA Tester",
+                  "Product Owner"
+                ];
+                return ListTile(
+                  title: Center(child: Text(roles[index])),
+                  onTap: () {
+                    roleController.text = roles[index];
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -144,6 +157,45 @@ class _AddEmployeeState extends State<AddEmployee> {
           Text("Today")
         ],
       ),
+    );
+  }
+
+  Widget buildEmployeeName() {
+    return TextFormField(
+      controller: nameController,
+      style: getTextHeading(color: AppColors.colorBlack, fontSize: 12),
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.people, color: AppColors.colorBlue),
+        hintText: "Employee Name",
+        hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10.0),
+          borderSide: const BorderSide(width: 1.0, color: Colors.grey),
+        ),
+      ),
+    );
+  }
+  Widget buildRole()
+  {
+    return TextFormField(
+      controller: roleController,
+      readOnly: true,
+      style: getTextHeading(color: AppColors.colorBlack, fontSize: 12),
+      decoration: InputDecoration(
+        prefixIcon: const Icon(Icons.work_outline_outlined,
+            color: AppColors.colorBlue),
+        hintText: "Select Role",
+        hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
+        suffixIcon:
+        const Icon(Icons.arrow_drop_down, color: AppColors.colorBlue),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(6.0),
+          borderSide: const BorderSide(width: 1.0, color: Colors.grey),
+        ),
+      ),
+      onTap: () {
+        buildBottomSheet();
+      },
     );
   }
 }
