@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 TextStyle getTextHeading(
     {Color? color = AppColors.colorWhite,
     double fontSize = 18,
-    FontWeight fontWeight = FontWeight.w500}) {
+    FontWeight fontWeight = FontWeight.normal}) {
   return  TextStyle(
     color: color,
     fontSize: fontSize,

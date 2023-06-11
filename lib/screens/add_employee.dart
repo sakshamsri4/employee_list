@@ -1,6 +1,11 @@
 import 'package:employee_list/constants/app_colors.dart';
+import 'package:employee_list/constants/app_strings.dart';
+import 'package:employee_list/constants/custom_widget.dart';
 import 'package:employee_list/constants/theme_text.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+
+import 'custom_calendar.dart';
 
 class AddEmployee extends StatefulWidget {
   const AddEmployee({super.key});
@@ -12,12 +17,17 @@ class AddEmployee extends StatefulWidget {
 class _AddEmployeeState extends State<AddEmployee> {
   TextEditingController nameController = TextEditingController();
   TextEditingController roleController = TextEditingController();
+  String? startDate;
+
+  String endDate = AppStrings.textNoDate;
+  TextEditingController endDateController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: Text("Add Employee Details", style: getTextHeading()),
+          title:
+              Text(AppStrings.textAddEmployeeDetails, style: getTextHeading()),
           backgroundColor: AppColors.colorBlue),
       body: buildBody(),
     );
@@ -39,12 +49,21 @@ class _AddEmployeeState extends State<AddEmployee> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              customDateTile(),
+              customDateTile(
+                  day: startDate ?? AppStrings.textToday,
+                  onTap: () {
+                    showCustomCalendar(context);
+                  }),
               const Icon(
                 Icons.arrow_forward,
                 color: AppColors.colorBlue,
               ),
-              customDateTile()
+              customDateTile(
+                  day: endDate,
+                  start: false,
+                  onTap: () {
+                    showCustomCalendar(context, start: false);
+                  })
             ],
           ),
           const Spacer(),
@@ -55,15 +74,20 @@ class _AddEmployeeState extends State<AddEmployee> {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              buildButton(
-                  buttonText: "Cancel",
+              CustomWidget().buildButton(
+                  buttonText: AppStrings.textCancel,
                   textColor: AppColors.colorBlue,
-                  backgroundColor: AppColors.colorSkyBlue.withOpacity(.2)),
-              buildButton(
-                buttonText: "Save",
-              ),
+                  backgroundColor: AppColors.colorSkyBlue.withOpacity(.2),
+                  onTap: () {
+                    Navigator.pop(context);
+                  }),
+              CustomWidget()
+                  .buildButton(buttonText: AppStrings.textSave, onTap: () {}),
             ],
           ),
+          const SizedBox(
+            height: 20,
+          )
         ],
       ),
     );
@@ -81,7 +105,7 @@ class _AddEmployeeState extends State<AddEmployee> {
       builder: (BuildContext context) {
         return Padding(
           padding: MediaQuery.of(context).viewInsets,
-          child: Container(
+          child: SizedBox(
             height: MediaQuery.of(context).size.height * 0.5,
             child: ListView.separated(
               itemCount: 4,
@@ -89,10 +113,10 @@ class _AddEmployeeState extends State<AddEmployee> {
                   const Divider(),
               itemBuilder: (BuildContext context, int index) {
                 List<String> roles = [
-                  "Product Designer",
-                  "Flutter Developer",
-                  "QA Tester",
-                  "Product Owner"
+                  AppStrings.textProductDesigner,
+                  AppStrings.textFlutterDeveloper,
+                  AppStrings.textQaTester,
+                  AppStrings.textProductOwner,
                 ];
                 return ListTile(
                   title: Center(child: Text(roles[index])),
@@ -109,53 +133,80 @@ class _AddEmployeeState extends State<AddEmployee> {
     );
   }
 
-  Widget buildButton(
-      {required String buttonText,
-      Color textColor = AppColors.colorWhite,
-      Color backgroundColor = AppColors.colorBlue}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20.0, top: 10, left: 20),
-      child: Container(
-          height: 30,
-          width: 80,
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            border: Border.all(
-              color: AppColors.colorDarkGrey,
-              width: 0.5,
-            ),
-            borderRadius: BorderRadius.circular(6),
+  Future<void> showCustomCalendar(BuildContext context,
+      {bool start = true}) async {
+    final result = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: SizedBox(
+            height: MediaQuery.of(context).size.height * .8,
+            width: MediaQuery.of(context).size.width * .9,
+            child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: CustomCalendar(
+                  start: start,
+                )),
           ),
-          child: Center(
-              child: Text(
-            buttonText,
-            style: getTextHeading(color: textColor, fontSize: 14),
-          ))),
+        );
+      },
     );
+    setState(() {
+      if (start) {
+        startDate = result.toString().isNotEmpty
+            ? result.toString() !=
+                    DateFormat('d MMM yyyy').format(DateTime.now())
+                ? result.toString()
+                : AppStrings.textToday
+            : AppStrings.textToday;
+        if (result == null) {
+          startDate = AppStrings.textToday;
+        }
+      } else {
+        endDate = result.toString().isNotEmpty
+            ? result.toString() !=
+                    DateFormat('d MMM yyyy').format(DateTime.now())
+                ? result.toString()
+                : AppStrings.textToday
+            : AppStrings.textNoDate;
+        if (result == null) {
+          endDate = AppStrings.textNoDate;
+        }
+      }
+    });
   }
 
-  Widget customDateTile() {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-      width: MediaQuery.of(context).size.width / 2 - 50,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: AppColors.colorDarkGrey,
-          width: 0.5,
+  Widget customDateTile(
+      {required String day, required onTap, bool start = true}) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+        width: MediaQuery.of(context).size.width / 2 - 50,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: AppColors.colorDarkGrey,
+            width: 0.5,
+          ),
+          borderRadius: BorderRadius.circular(6),
         ),
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: const Row(
-        children: [
-          Icon(
-            Icons.calendar_today_outlined,
-            color: AppColors.colorBlue,
-          ),
-          SizedBox(
-            width: 10,
-          ),
-          Text("Today")
-        ],
+        child: Row(
+          children: [
+            const Icon(
+              Icons.calendar_today_outlined,
+              color: AppColors.colorBlue,
+            ),
+            const SizedBox(
+              width: 10,
+            ),
+            Text(
+              day,
+              style: getTextHeading(
+                  color: start ? AppColors.colorBlack : AppColors.colorDarkGrey,
+                  fontSize: 14),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -166,7 +217,7 @@ class _AddEmployeeState extends State<AddEmployee> {
       style: getTextHeading(color: AppColors.colorBlack, fontSize: 12),
       decoration: InputDecoration(
         prefixIcon: const Icon(Icons.people, color: AppColors.colorBlue),
-        hintText: "Employee Name",
+        hintText: AppStrings.textEmployeeName,
         hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10.0),
@@ -175,19 +226,19 @@ class _AddEmployeeState extends State<AddEmployee> {
       ),
     );
   }
-  Widget buildRole()
-  {
+
+  Widget buildRole() {
     return TextFormField(
       controller: roleController,
       readOnly: true,
       style: getTextHeading(color: AppColors.colorBlack, fontSize: 12),
       decoration: InputDecoration(
-        prefixIcon: const Icon(Icons.work_outline_outlined,
-            color: AppColors.colorBlue),
-        hintText: "Select Role",
+        prefixIcon:
+            const Icon(Icons.work_outline_outlined, color: AppColors.colorBlue),
+        hintText: AppStrings.textSelectRole,
         hintStyle: const TextStyle(color: Colors.grey, fontSize: 12),
         suffixIcon:
-        const Icon(Icons.arrow_drop_down, color: AppColors.colorBlue),
+            const Icon(Icons.arrow_drop_down, color: AppColors.colorBlue),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(6.0),
           borderSide: const BorderSide(width: 1.0, color: Colors.grey),
